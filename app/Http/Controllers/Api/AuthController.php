@@ -11,7 +11,15 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-
+        $validator = \Validator::make($request->all(),[
+            'username'=>['required'],
+            'password'=>['required', 'string','min:8'],
+            'pin'=>['required','min:4'],
+            'invitation_code'=>['required','min:4'],
+            'country_code'=>['required'],
+            'country_name'=>['required'],
+            'country_dial_code'=>['required'],
+        ]);
 
     }
     public function login(Request $request)
