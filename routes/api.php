@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers\Api\AuthController;
+use \App\Http\Controllers\Api\FrontendController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,9 +18,15 @@ use \App\Http\Controllers\Api\AuthController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
 Route::middleware('guest')->group(function (){
     Route::controller(AuthController::class)->group(function (){
         Route::post('register','register');
         Route::post('login','login');
+    });
+});
+Route::middleware('auth:api')->group(function (){
+    Route::controller(FrontendController::class)->group(function (){
+        Route::get('get-current-user-transaction','getCurrentUserTransaction');
     });
 });
