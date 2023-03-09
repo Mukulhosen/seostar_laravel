@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\EarnCommissionTransaction;
+use App\Models\EarningTransaction;
 use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\Transaction;
@@ -119,9 +121,74 @@ class FrontendController extends Controller
                 'price' => $user->levels->task_price,
                 'created' => date('Y-m-d')
             ];
+            TaskHistory::create($data);
+            $trs = [
+                'user_id' => $user->id,
+                'perpose' => @$task_data->name,
+                'created' => date('Y-m-d H:i:s'),
+                'amount' => $user->levels->task_price,
+                'by_whom' => 0
+            ];
+            //dd(updateBalance(Auth::guard('api')->id(),$user->levels->task_price));
+            if (updateBalance(Auth::guard('api')->id(),$user->levels->task_price)){
+                EarningTransaction::create($trs);
+                $this->taskCommission($user);
+                $response = [
+                    'status' => true,
+                    'msg' => 'Task complete',
+                    'data'=>null
+                ];
+            }else{
+                $response = [
+                    'status' => false,
+                    'msg' => 'Task not complete',
+                    'data'=>null
+                ];
+            }
+        }else{
+            $response = [
+                'status' => false,
+                'msg' => 'Task not complete',
+                'data'=>null
+            ];
         }
-        return $completeTask;
+        return response()->json($response);
     }
+
+    private function taskCommission($user)
+    {
+        $levelPercentage = [1 => 0.5, 2 => 0.3, 3 => 0.1];
+        $ref = @$user->referral;
+        for ($i = 1; $i < 4; $i++) {
+            $ref_user = User::where('id',$ref)->first();
+            if (!empty($ref) && !empty($ref_user)) {
+                $commission_amount = ($user->levels->task_price * $levelPercentage[$i]) / 100;
+                $exist_trs = EarnCommissionTransaction::where('user_id',$ref_user->id)
+                    ->where('by_whom',$user->id)
+                    ->whereDate('created',date('Y-m-d'))
+                    ->first();
+                if(!empty($exist_trs)){
+                    $new_balance = $ref_user->balance + $commission_amount;
+                    $commission_amount = $exist_trs->amount + $commission_amount;
+                    EarnCommissionTransaction::where('id',$exist_trs->id)->update(['amount'=>$commission_amount]);
+                    User::where('id',$ref_user->id)->update(['balance'=>$new_balance]);
+                }else{
+                    $transaction = [
+                        'user_id' => $ref,
+                        'perpose' => 'Task Commission from level ' . $i,
+                        'note' => $i,
+                        'created' => date('Y-m-d H:i:s'),
+                        'amount' => $commission_amount,
+                        'by_whom' => $user->id
+                    ];
+                    EarnCommissionTransaction::create($transaction);
+                    updateBalance($ref,$commission_amount);
+                }
+                $ref = $ref_user->referral;
+            }
+        }
+    }
+
     public function getCurrentUserTransaction(Request $request)
     {
         $user = Auth::user();
