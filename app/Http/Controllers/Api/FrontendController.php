@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Task;
+use App\Models\TaskHistory;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -59,6 +62,28 @@ class FrontendController extends Controller
                 'total'=>number_format(@$total->price,2),
             ]
         ]);
+    }
+
+    public function userTask()
+    {
+        $user = Auth::user();
+        $currentUserDailyTask = User::leftJoin('levels','levels.id','=','users.level')
+            ->where('users.id',$user->id)->first();
+        $completeTask = TaskHistory::selectRaw('COUNT(id) as total')
+            ->where('user_id',Auth::id())
+            ->where('created',date('Y-m-d'))->first();
+        $completeTask = $completeTask->total ?? 0;
+        $limit = (int)($currentUserDailyTask->daily_task ?? 0) - $completeTask;
+        if ($limit < 0) {
+            $limit = 0;
+        }
+        $tasks = Task::select('tasks.*')
+            ->leftJoin('task_history',function ($join){
+                $join->on('task_history.task_id','=','tasks.id');
+                $join->where('task_history.created','=', date('Y-m-d'));
+                $join->where('task_history.user_id','=', Auth::id());
+            })->orderBy('task_history.id','ASC')->get();
+        return $tasks;
     }
     public function getCurrentUserTransaction(Request $request)
     {
