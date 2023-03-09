@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BuyCommissionTransaction;
 use App\Models\EarnCommissionTransaction;
 use App\Models\EarningTransaction;
 use App\Models\Task;
@@ -21,37 +22,34 @@ class FrontendController extends Controller
 
     public function dashboard()
     {
-        $todayEarning = Transaction::selectRaw('SUM(amount) as price')
+        $todayEarning = EarningTransaction::selectRaw('SUM(amount) as price')
             ->whereDate('created',date('Y-m-d'))
             ->where('user_id',Auth::id())
-            ->where('type',3)
             ->first();
-        $sevenDays = Transaction::selectRaw('SUM(amount) as price')
+        $sevenDays = EarningTransaction::selectRaw('SUM(amount) as price')
             ->where('created','>=',date('Y-m-d', strtotime('-7 day', strtotime(date('Y-m-d')))))
             ->where('created','<',date('Y-m-d'))
             ->where('user_id',Auth::id())
-            ->where('type',3)
             ->first();
 
-        $thisMonth = Transaction::selectRaw('SUM(amount) as price')
+        $thisMonth = EarningTransaction::selectRaw('SUM(amount) as price')
             ->where('created','>=',date('Y-m-01'))
             ->where('user_id',Auth::id())
-            ->where('type',3)
             ->first();
 
-        $todayCommision = Transaction::selectRaw('SUM(amount) as price')
+        $todayCommision = BuyCommissionTransaction::selectRaw('SUM(amount) as price')
             ->where('created',date('Y-m-d'))
             ->where('user_id',Auth::id())
-            ->where('type',4)
             ->first();
-        $totalCommision = Transaction::selectRaw('SUM(amount) as price')
+        $totalCommision = BuyCommissionTransaction::selectRaw('SUM(amount) as price')
             ->where('user_id',Auth::id())
-            ->where('type',4)
             ->first();
-        $total = Transaction::selectRaw('SUM(amount) as price')
+        $totalEarning = EarningTransaction::selectRaw('SUM(amount) as price')
             ->where('user_id',Auth::id())
-            ->whereIn('type',[3,4])
             ->first();
+        $totalBuy =  BuyCommissionTransaction::selectRaw('SUM(amount) as price')->where('user_id',Auth::id())
+                ->first();
+        $total =  $totalEarning->price + $totalBuy->price;
         return response()->json([
             'status'=>true,
             'msg'=>'',
@@ -61,7 +59,7 @@ class FrontendController extends Controller
                 'thisMonth'=>number_format(@$thisMonth->price,2),
                 'todayCommision'=>number_format(@$todayCommision->price,2),
                 'totalCommision'=>number_format(@$totalCommision->price,2),
-                'total'=>number_format(@$total->price,2),
+                'total'=>number_format(@$total,2),
             ]
         ]);
     }
