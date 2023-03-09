@@ -109,7 +109,17 @@ class FrontendController extends Controller
             return response()->json($response);
         }
         $completeTask = TaskHistory::where('user_id',Auth::id())->where('created',date('Y-m-d'))->count();
-
+        $user = Auth::user();
+        if ((int) $completeTask <= (int) $user->levels->daily_task){
+            $taskId = $request->id;
+            $task_data = Task::where('id',$request->id)->first();
+            $data = [
+                'user_id' => $user->id,
+                'task_id' => $taskId,
+                'price' => $user->levels->task_price,
+                'created' => date('Y-m-d')
+            ];
+        }
         return $completeTask;
     }
     public function getCurrentUserTransaction(Request $request)
