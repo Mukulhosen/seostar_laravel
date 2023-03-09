@@ -28,5 +28,6 @@ Route::middleware('guest')->group(function (){
 Route::middleware('auth:api')->group(function (){
     Route::controller(FrontendController::class)->group(function (){
         Route::get('get-current-user-transaction','getCurrentUserTransaction');
+        Route::get('dashboard','dashboard');
     });
 });
