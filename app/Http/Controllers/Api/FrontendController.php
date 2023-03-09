@@ -67,13 +67,11 @@ class FrontendController extends Controller
     public function userTask()
     {
         $user = Auth::user();
-        $currentUserDailyTask = User::leftJoin('levels','levels.id','=','users.level')
-            ->where('users.id',$user->id)->first();
         $completeTask = TaskHistory::selectRaw('COUNT(id) as total')
             ->where('user_id',Auth::id())
             ->where('created',date('Y-m-d'))->first();
         $completeTask = $completeTask->total ?? 0;
-        $limit = (int)($currentUserDailyTask->daily_task ?? 0) - $completeTask;
+        $limit = (int)(Auth::user()->levels->daily_task ?? 0) - $completeTask;
         if ($limit < 0) {
             $limit = 0;
         }
@@ -90,6 +88,29 @@ class FrontendController extends Controller
                 'tasks'=>$tasks,
             ]
         ]);
+    }
+
+    public function userTaskComplete(Request $request)
+    {
+        $validator = \Validator::make($request->all(),[
+            'id'=>['required','integer','exists:\App\Models\Task'],
+        ]);
+        if ($validator->fails()){
+            $errors = "";
+            $e = $validator->errors()->all();
+            foreach ($e as $error) {
+                $errors .= $error . "\n";
+            }
+            $response = [
+                'status' => false,
+                'message' => $errors,
+                'data' => null
+            ];
+            return response()->json($response);
+        }
+        $completeTask = TaskHistory::where('user_id',Auth::id())->where('created',date('Y-m-d'))->count();
+
+        return $completeTask;
     }
     public function getCurrentUserTransaction(Request $request)
     {
