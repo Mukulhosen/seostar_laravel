@@ -83,7 +83,13 @@ class FrontendController extends Controller
                 $join->where('task_history.created','=', date('Y-m-d'));
                 $join->where('task_history.user_id','=', Auth::id());
             })->orderBy('task_history.id','ASC')->get();
-        return $tasks;
+        return response()->json([
+            'status'=>true,
+            'msg'=>'',
+            'data'=>[
+                'tasks'=>$tasks,
+            ]
+        ]);
     }
     public function getCurrentUserTransaction(Request $request)
     {
