@@ -330,7 +330,7 @@ class FrontendController extends Controller
 
             $taskKey = array_search($i, array_column($taskRaw, 'note'));
             if (is_numeric($taskKey)) {
-                $task[$i] = $taskRaw[$taskKey]['amount'];
+                $task[$i] = number_format($taskRaw[$taskKey]['amount'],2);
             } else {
                 $task[$i] = 0;
             }
@@ -341,6 +341,7 @@ class FrontendController extends Controller
             'data'=>[
                 'commisions' => $commision,
                 'level' => $level,
+                'tasks' => $task,
             ]
         ]);
     }
