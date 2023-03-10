@@ -15,6 +15,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Withdraw;
 use App\Models\WithdrawTransaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -411,5 +412,101 @@ class FrontendController extends Controller
         ]);
 
 
+    }
+
+    public function payout(Request $request)
+    {
+
+        $validator = \Validator::make($request->all(),[
+            'address'=>['required','max:255'],
+            'amount'=>['required','integer'],
+            'pin'=>['required','numeric','min:0001','max:9999']
+        ]);
+        if ($validator->fails()){
+            $errors = "";
+            $e = $validator->errors()->all();
+            foreach ($e as $error) {
+                $errors .= $error . "\n";
+            }
+            $response = [
+                'status' => false,
+                'message' => $errors,
+                'data' => null
+            ];
+            return response()->json($response);
+        }
+        $user = Auth::guard('api')->user();
+        $nineAm =  Carbon::parse('today 9am');
+        $sixPm =  Carbon::parse('today 6pm');
+        $current = Carbon::now();
+        if ($current->gte($nineAm) || $current->lte($sixPm)){ //Here repalce with && condition
+            if ($user->levels->is_start == 0 && $user->levels->id != 1){
+                if ($request->pin == $user->pin) {
+                    $amount =(float) $request->amount;
+                    if (($amount >= 4) && ($amount <=300) && ($amount <= $user->balance)){
+                        $today_exist = Withdraw::where('user_id',$user->id)->whereDate('created',date('Y-m-d'))
+                        ->exists();
+                        if($today_exist){
+                            $response = [
+                                'status'=>false,
+                                'msg'=>'You can make withdraw request once per day',
+                                'data'=>null
+                            ];
+                        }else{
+                            $data = [
+                                'user_id' => $user->id,
+                                'perpose' => 'Withdraw by A/C:' . @$user->account_number,
+                                'note' => '',
+                                'created' => date('Y-m-d H:i:s'),
+                                'amount' => (float)$amount,
+                                'by_whom' => 0
+                            ];
+                            WithdrawTransaction::create($data);
+                            updateBalance($user->id,$amount,'withdraw');
+                            $withdrawData = [
+                                'user_id' => $user->id,
+                                'address' => $request->address,
+                                'amount' => (float)($amount - 1),
+                                'status' => 'Processing',
+                                'created' => date('Y-m-d H:i:s'),
+                                'modified' => date('Y-m-d H:i:s')
+                            ];
+                            Withdraw::create($withdrawData);
+                            $response = [
+                                'status'=>true,
+                                'msg'=>'Withdraw successful',
+                                'data'=>null
+                            ];
+                        }
+                    }else{
+                        $response = [
+                            'status'=>false,
+                            'msg'=>'Withdraw limit Between 5-300 USD',
+                            'data'=>null
+                        ];
+                    }
+
+                }else{
+                    $response = [
+                        'status'=>false,
+                        'msg'=>'Wrong PIN',
+                        'data'=>null
+                    ];
+                }
+            }else{
+                $response = [
+                    'status'=>false,
+                    'msg'=>'Please upgrade to VIP Level',
+                    'data'=>null
+                ];
+            }
+        }else{
+            $response = [
+                'status'=>false,
+                'msg'=>'Withdraw Request time is UTC 9am to 6pm',
+                'data'=>null
+            ];
+        }
+        return response()->json($response);
     }
 }
