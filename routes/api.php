@@ -35,5 +35,6 @@ Route::middleware('auth:api')->group(function (){
         Route::get('get-user-transactions','getUserTransactions');
         Route::get('current-user-info','getCurrentUserInfo');
         Route::get('teams','teams');
+        Route::get('history','history');
     });
 });

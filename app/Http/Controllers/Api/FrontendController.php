@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Models\BuyCommissionTransaction;
+use App\Models\Deposit;
 use App\Models\DepositTransaction;
 use App\Models\EarnCommissionTransaction;
 use App\Models\EarningTransaction;
@@ -12,17 +13,13 @@ use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Withdraw;
 use App\Models\WithdrawTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FrontendController extends Controller
 {
-    public function index()
-    {
-
-    }
-
     public function dashboard()
     {
         $todayEarning = EarningTransaction::selectRaw('SUM(amount) as price')
@@ -379,5 +376,43 @@ class FrontendController extends Controller
                 'teamLogs' => PaginationHelper::paginate(collect($logs),2),
             ]
         ]);
+    }
+
+    public function history(Request $request)
+    {
+        $validator = \Validator::make($request->all(),[
+            'type'=>['required','in:recharge,withdraw'],
+        ]);
+        if ($validator->fails()){
+            $errors = "";
+            $e = $validator->errors()->all();
+            foreach ($e as $error) {
+                $errors .= $error . "\n";
+            }
+            $response = [
+                'status' => false,
+                'message' => $errors,
+                'data' => null
+            ];
+            return response()->json($response);
+        }
+
+        $type = $request->type;
+        $user = Auth::guard('api')->user();
+        $data = [];
+        if ($type == 'recharge'){
+            $data = Deposit::where('user_id',$user->id)->orderByDesc('id')->paginate(20);
+        }else{
+            $data = Withdraw::where('user_id',$user->id)->orderByDesc('id')->paginate(20);
+        }
+        return response()->json([
+            'status'=>true,
+            'msg'=>'',
+            'data'=>[
+                'data'=>$data
+            ]
+        ]);
+
+
     }
 }
