@@ -34,5 +34,6 @@ Route::middleware('auth:api')->group(function (){
         Route::post('user-task-complete','userTaskComplete');
         Route::get('get-user-transactions','getUserTransactions');
         Route::get('current-user-info','getCurrentUserInfo');
+        Route::get('teams','teams');
     });
 });

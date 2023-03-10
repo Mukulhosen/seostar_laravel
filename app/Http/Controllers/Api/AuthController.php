@@ -122,7 +122,7 @@ class AuthController extends Controller
             $token = $user->createToken($user->username)->accessToken;
             return response()->json([
                 'status'=>true,
-                'message'=>'',
+                'message'=>'Login Successful',
                 'data'=>[
                     'access_token' => $token,
                     'access_type' => "Bearer",

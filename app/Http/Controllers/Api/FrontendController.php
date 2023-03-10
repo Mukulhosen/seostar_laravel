@@ -211,16 +211,12 @@ class FrontendController extends Controller
     public function getUserTransactions(Request $request)
     {
         $limit = 5;
-        if (intval($request->limit) > 0){
-            $limit = (int)$request->limit;
-        }
         $user = Auth::guard('api')->user();
          $WithdrawTransactions = WithdrawTransaction::selectRaw('*,"withdraw" as type')->where('user_id',$user->id)
              ->limit($limit)->orderByDesc('id');
         $transactions = DepositTransaction::selectRaw('*,"deposit" as type')->where('user_id',$user->id)
             ->unionAll($WithdrawTransactions)
             ->limit($limit)->orderByDesc('id')->get();
-
         $response = [
             'status' => true,
             'msg' => '',
@@ -248,6 +244,56 @@ class FrontendController extends Controller
                'todayEarning'=>$todayEarning,
                'completeTask'=>$completeTask
            ]
+        ]);
+    }
+
+    public function teams(Request $request)
+    {
+        $filter = $request->filter;
+
+        $commisionRaw =  BuyCommissionTransaction::selectRaw('SUM(amount) as amount,note')->where('user_id',Auth::id());
+        $taskRaw = EarnCommissionTransaction::selectRaw('SUM(amount) as amount,note')->where('user_id',Auth::id());
+        if ($filter == 'today'){
+            $commisionRaw = $commisionRaw->whereDate('created',date('Y-m-d'));
+            $taskRaw = $taskRaw->whereDate('created',date('Y-m-d'));
+        }
+        if ($filter == 'seven-days') {
+            $commisionRaw = $commisionRaw->whereDate('created','<=',date('Y-m-d'))
+            ->whereDate('created','>',date('Y-m-d', strtotime('-7 days')));
+
+            $taskRaw = $taskRaw->whereDate('created','<=',date('Y-m-d'))
+                ->whereDate('created','>',date('Y-m-d', strtotime('-7 days')));
+        }
+        $commisionRaw =$commisionRaw->groupBy('note')
+            ->orderBy('note','ASC')
+            ->get()->toArray();
+
+        $taskRaw = $taskRaw->groupBy('note')
+            ->orderBy('note','ASC')
+            ->get()->toArray();
+
+        $task = [];
+        for ($i = 1; $i < 4; $i++) {
+            $key = array_search($i, array_column($commisionRaw, 'note'));
+            if (is_numeric($key)) {
+                $commision[$i] = $commisionRaw[$key]['amount'];
+            } else {
+                $commision[$i] = 0;
+            }
+
+            $taskKey = array_search($i, array_column($taskRaw, 'note'));
+            if (is_numeric($taskKey)) {
+                $task[$i] = $taskRaw[$taskKey]['amount'];
+            } else {
+                $task[$i] = 0;
+            }
+        }
+        return response()->json([
+            'status'=>true,
+            'msg'=>'',
+            'data'=>[
+                'commisions' => $commision
+            ]
         ]);
     }
 }
