@@ -230,4 +230,24 @@ class FrontendController extends Controller
         ];
         return response()->json($response);
     }
+
+    public function getCurrentUserInfo()
+    {
+        $user = User::with('levels')->where('id',Auth::guard('api')->id())->first();
+        $todayEarning = TaskHistory::where('user_id',$user->id)
+            ->where('created',date('Y-m-d'))
+            ->sum('price');
+        $completeTask = TaskHistory::where('user_id',$user->id)
+            ->where('created',date('Y-m-d'))
+            ->count('id');
+        return response()->json([
+           'status'=>true,
+           'msg'=>'',
+           'data'=>[
+               'user'=>$user,
+               'todayEarning'=>$todayEarning,
+               'completeTask'=>$completeTask
+           ]
+        ]);
+    }
 }

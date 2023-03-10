@@ -25,6 +25,7 @@ Route::middleware('guest')->group(function (){
         Route::post('login','login');
     });
 });
+
 Route::middleware('auth:api')->group(function (){
     Route::controller(FrontendController::class)->group(function (){
         Route::get('get-current-user-transaction','getCurrentUserTransaction');
@@ -32,5 +33,6 @@ Route::middleware('auth:api')->group(function (){
         Route::get('user-task','userTask');
         Route::post('user-task-complete','userTaskComplete');
         Route::get('get-user-transactions','getUserTransactions');
+        Route::get('current-user-info','getCurrentUserInfo');
     });
 });
