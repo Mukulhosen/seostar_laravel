@@ -249,7 +249,54 @@ class FrontendController extends Controller
 
     public function teams(Request $request)
     {
+
         $filter = $request->filter;
+        $user = Auth::guard('api')->user();
+        $level['one'] = 0;
+        $level['two'] = 0;
+        $level['three'] = 0;
+
+        $level1Team = [];
+        $level2Team = [];
+        $level3Team = [];
+
+        $level1Team = User::select('users.id')->where('users.referral',$user->id);
+        if ($filter == 'today') {
+            $level1Team = $level1Team->whereDate('users.created',date('Y-m-d'));
+        }
+        if ($filter == 'seven-days') {
+            $level1Team = $level1Team->whereDate('created','<=',date('Y-m-d'))
+                ->whereDate('created','>',date('Y-m-d', strtotime('-7 days')));
+        }
+        $level1Team = $level1Team->get()->pluck('id')->toArray();
+        if (!empty($level1Team)){
+            $level['one'] = count($level1Team);
+            $level2Team = User::select('users.id')->whereIn('users.referral',$level1Team);
+            if ($filter == 'today') {
+                $level2Team = $level2Team->whereDate('users.created',date('Y-m-d'));
+            }
+            if ($filter == 'seven-days') {
+                $level2Team = $level2Team->whereDate('created','<=',date('Y-m-d'))
+                    ->whereDate('created','>',date('Y-m-d', strtotime('-7 days')));
+            }
+            $level2Team = $level2Team->get()->pluck('id')->toArray();
+            if (!empty($level2Team)){
+                $level['two'] = count($level2Team);
+                $level3Team = User::select('users.id')->whereIn('users.referral',$level2Team);
+                if ($filter == 'today') {
+                    $level3Team = $level3Team->whereDate('users.created',date('Y-m-d'));
+                }
+                if ($filter == 'seven-days') {
+                    $level3Team = $level3Team->whereDate('created','<=',date('Y-m-d'))
+                        ->whereDate('created','>',date('Y-m-d', strtotime('-7 days')));
+                }
+                $level3Team = $level3Team->get()->pluck('id')->toArray();
+                if (!empty($level3Team)) {
+                    $level['three'] = count($level3Team);
+                }
+            }
+        }
+
 
         $commisionRaw =  BuyCommissionTransaction::selectRaw('SUM(amount) as amount,note')->where('user_id',Auth::id());
         $taskRaw = EarnCommissionTransaction::selectRaw('SUM(amount) as amount,note')->where('user_id',Auth::id());
@@ -292,7 +339,8 @@ class FrontendController extends Controller
             'status'=>true,
             'msg'=>'',
             'data'=>[
-                'commisions' => $commision
+                'commisions' => $commision,
+                'level' => $level,
             ]
         ]);
     }
