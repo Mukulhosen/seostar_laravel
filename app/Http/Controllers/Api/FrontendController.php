@@ -9,6 +9,7 @@ use App\Models\Deposit;
 use App\Models\DepositTransaction;
 use App\Models\EarnCommissionTransaction;
 use App\Models\EarningTransaction;
+use App\Models\PurchaseTransaction;
 use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\Transaction;
@@ -419,7 +420,7 @@ class FrontendController extends Controller
 
         $validator = \Validator::make($request->all(),[
             'address'=>['required','max:255'],
-            'amount'=>['required','integer'],
+            'amount'=>['required','numeric'],
             'pin'=>['required','numeric','min:0001','max:9999']
         ]);
         if ($validator->fails()){
@@ -505,6 +506,66 @@ class FrontendController extends Controller
                 'status'=>false,
                 'msg'=>'Withdraw Request time is UTC 9am to 6pm',
                 'data'=>null
+            ];
+        }
+        return response()->json($response);
+    }
+
+    public function accountRecord(Request $request)
+    {
+        $validator = \Validator::make($request->all(),[
+            'type'=>['required','max:255','in:expense,recharge,reward']
+        ]);
+        if ($validator->fails()){
+            $errors = "";
+            $e = $validator->errors()->all();
+            foreach ($e as $error) {
+                $errors .= $error . "\n";
+            }
+            $response = [
+                'status' => false,
+                'message' => $errors,
+                'data' => null
+            ];
+            return response()->json($response);
+        }
+        $user = getAuthUser();
+        $type = $request->type;
+
+        if ($type == 'reward'){
+            $earningTransactions = EarningTransaction::selectRaw('*,"withdraw" as type')->where('user_id',$user->id)
+                ->orderByDesc('id');
+            $rewards = BuyCommissionTransaction::selectRaw('*,"deposit" as type')->where('user_id',$user->id)
+                ->unionAll($earningTransactions)
+                ->orderByDesc('id')->groupBy('id')->paginate(20);
+           $response = [
+                'status'=>true,
+               'msg'=>'',
+               'data'=>[
+                   'response'=>$rewards
+               ]
+           ];
+        }
+        if ($type == 'expense'){
+            $expence = PurchaseTransaction::selectRaw('*')->where('user_id',$user->id)
+                ->orderByDesc('id')->groupBy('id')->paginate(20);
+            $response = [
+                'status'=>true,
+                'msg'=>'',
+                'data'=>[
+                    'response'=>$expence
+                ]
+            ];
+        }
+        if ($type == 'recharge'){
+            $recharge = Deposit::selectRaw('*')->where('user_id',$user->id)
+                ->orderByDesc('id')->groupBy('id')->paginate(20);
+            $response = [
+                'status'=>true,
+                'msg'=>'',
+                'data'=>[
+                    'response'=>$recharge
+                ]
             ];
         }
         return response()->json($response);

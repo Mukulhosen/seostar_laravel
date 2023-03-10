@@ -52,3 +52,9 @@ function array_sort($array, $on, $order=SORT_ASC)
     }
     return $new_array;
 }
+function getAuthUser(){
+    return \Illuminate\Support\Facades\Auth::guard('api')->user();
+}
+function getAuthUserId(){
+    return \Illuminate\Support\Facades\Auth::guard('api')->id();
+}
