@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Models\BuyCommissionTransaction;
 use App\Models\DepositTransaction;
@@ -251,6 +252,9 @@ class FrontendController extends Controller
     {
 
         $filter = $request->filter;
+        $limit = $request->limit ? intval($request->limit): 20;
+        $start= $request->start ? intval($request->start) : 0;
+
         $user = Auth::guard('api')->user();
         $level['one'] = 0;
         $level['two'] = 0;
@@ -297,6 +301,36 @@ class FrontendController extends Controller
             }
         }
 
+        $logs = [];
+        if (!empty($logs)) {
+            usort($logs, function ($a, $b) {
+                return $b['id'] <=> $a['id'];
+            });
+        }
+        if (!empty($level1Team)) {
+            $value = User::selectRaw('users.username,users.balance,users.created,"1" as team,levels.name as level_name')
+            ->join('levels','levels.id','=','users.level')
+            ->whereIn('users.id',$level1Team)->get()->toArray();
+            $logs = array_merge($value, $logs);
+        }
+        if (!empty($level2Team)) {
+            $value = User::selectRaw('users.username,users.balance,users.created,"2" as team,levels.name as level_name')
+                ->join('levels','levels.id','=','users.level')
+                ->whereIn('users.id',$level2Team)->get()->toArray();
+            $logs = array_merge($value, $logs);
+        }
+
+        if (!empty($level3Team)) {
+            $value = User::selectRaw('users.username,users.balance,users.created,"3" as team,levels.name as level_name')
+                ->join('levels','levels.id','=','users.level')
+                ->whereIn('users.id',$level3Team)->get()->toArray();
+            $logs = array_merge($value, $logs);
+        }
+        if (!empty($logs)) {
+            $logs = array_sort($logs, 'id', SORT_DESC);
+        }
+
+
 
         $commisionRaw =  BuyCommissionTransaction::selectRaw('SUM(amount) as amount,note')->where('user_id',Auth::id());
         $taskRaw = EarnCommissionTransaction::selectRaw('SUM(amount) as amount,note')->where('user_id',Auth::id());
@@ -342,6 +376,7 @@ class FrontendController extends Controller
                 'commisions' => $commision,
                 'level' => $level,
                 'tasks' => $task,
+                'teamLogs' => PaginationHelper::paginate(collect($logs),2),
             ]
         ]);
     }
