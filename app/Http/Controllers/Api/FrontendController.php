@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BuyCommissionTransaction;
+use App\Models\DepositTransaction;
 use App\Models\EarnCommissionTransaction;
 use App\Models\EarningTransaction;
 use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\WithdrawTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -204,5 +206,28 @@ class FrontendController extends Controller
 
         return $transactions;
 
+    }
+
+    public function getUserTransactions(Request $request)
+    {
+        $limit = 5;
+        if (intval($request->limit) > 0){
+            $limit = (int)$request->limit;
+        }
+        $user = Auth::guard('api')->user();
+         $WithdrawTransactions = WithdrawTransaction::selectRaw('*,"withdraw" as type')->where('user_id',$user->id)
+             ->limit($limit)->orderByDesc('id');
+        $transactions = DepositTransaction::selectRaw('*,"deposit" as type')->where('user_id',$user->id)
+            ->unionAll($WithdrawTransactions)
+            ->limit($limit)->orderByDesc('id')->get();
+
+        $response = [
+            'status' => true,
+            'msg' => '',
+            'data'=>[
+                'transactions'=>$transactions
+            ]
+        ];
+        return response()->json($response);
     }
 }

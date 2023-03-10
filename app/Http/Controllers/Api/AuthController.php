@@ -68,12 +68,13 @@ class AuthController extends Controller
             'password'=>password_hash($request->password,PASSWORD_DEFAULT),
             'account_number'=>unique_random_number(),
         ];
+        //return $data;
         $user = User::create($data);
         if ($user){
             $token = $user->createToken($user->username)->accessToken;
             return response()->json([
                 'status' => true,
-                'message' => '',
+                'message' => 'Register Successful',
                 'data' => [
                     'access_token' => $token,
                     'access_type' => "Bearer",

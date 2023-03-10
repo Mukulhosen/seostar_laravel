@@ -31,5 +31,6 @@ Route::middleware('auth:api')->group(function (){
         Route::get('dashboard','dashboard');
         Route::get('user-task','userTask');
         Route::post('user-task-complete','userTaskComplete');
+        Route::get('get-user-transactions','getUserTransactions');
     });
 });
