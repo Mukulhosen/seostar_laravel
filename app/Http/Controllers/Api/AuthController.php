@@ -137,4 +137,52 @@ class AuthController extends Controller
             ]);
         }
     }
+
+    public function changePassword(Request $request)
+    {
+
+        $validator = \Validator::make($request->all(),[
+            'password'=>['required', 'string', 'min:8','confirmed'],
+            'password_confirmation'=>['required', 'string', 'min:8'],
+            'pin'=>['required','min:4','max:4'],
+        ]);
+        if ($validator->fails()){
+            $errors = "";
+            $e = $validator->errors()->all();
+            foreach ($e as $error) {
+                $errors .= $error . "\n";
+            }
+            $response = [
+                'status' => false,
+                'message' => $errors,
+                'data' => null
+            ];
+            return response()->json($response);
+        }
+
+        $user = Auth::guard('api')->user();
+        if ($request->pin != $user->pin){
+            response()->json([
+                'status'=>false,
+                'msg'=>'PIN not match',
+                'data'=>null
+            ]);
+        }
+        $user->password = password_hash($request->password,PASSWORD_DEFAULT);
+        if ($user->save()){
+            response()->json([
+                'status'=>true,
+                'msg'=>'Password change successfully',
+                'data'=>null
+            ]);
+        }else{
+            response()->json([
+                'status'=>false,
+                'msg'=>'Password not change',
+                'data'=>null
+            ]);
+        }
+
+
+    }
 }

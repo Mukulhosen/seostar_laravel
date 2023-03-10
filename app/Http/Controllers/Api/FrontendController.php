@@ -249,9 +249,6 @@ class FrontendController extends Controller
     {
 
         $filter = $request->filter;
-        $limit = $request->limit ? intval($request->limit): 20;
-        $start= $request->start ? intval($request->start) : 0;
-
         $user = Auth::guard('api')->user();
         $level['one'] = 0;
         $level['two'] = 0;

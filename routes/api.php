@@ -37,4 +37,7 @@ Route::middleware('auth:api')->group(function (){
         Route::get('teams','teams');
         Route::get('history','history');
     });
+    Route::controller(AuthController::class)->group(function (){
+        Route::post('change-password','changePassword');
+    });
 });
