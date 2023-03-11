@@ -372,7 +372,10 @@ class FrontendController extends Controller
                 'commisions' => $commision,
                 'level' => $level,
                 'tasks' => $task,
-                'teamLogs' => PaginationHelper::paginate(collect($logs),2),
+                'invitedPeople' => collect($level['one'])->sum(),
+                'totalTeam'=>collect($level)->sum(),
+                'teamLogs' => PaginationHelper::paginate(collect($logs),20)
+
             ]
         ]);
     }
