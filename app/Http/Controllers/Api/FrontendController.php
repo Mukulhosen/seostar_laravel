@@ -752,7 +752,8 @@ class FrontendController extends Controller
         ];
         $invoice = \Http::withHeaders($header)->post($url,$params);
         $invoice = $invoice->object();
-        if ($invoice){
+
+        if ($invoice->status){
             return  response()->json([
                 'status'=>true,
                 'msg'=>'',
@@ -763,7 +764,7 @@ class FrontendController extends Controller
         }else{
             return  response()->json([
                 'status'=>false,
-                'msg'=>'Invoice not create',
+                'msg'=>$invoice->message,
                 'data'=>null
             ]);
         }
