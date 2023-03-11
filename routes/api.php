@@ -41,6 +41,7 @@ Route::middleware('auth:api')->group(function (){
         Route::get('vip','vip');
         Route::post('buy-vip/{id}','buyVip');
         Route::get('dashboard-chart','dashboardChart');
+        Route::post('deposit','deposit');
     });
     Route::controller(AuthController::class)->group(function (){
         Route::post('change-password','changePassword');

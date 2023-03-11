@@ -714,4 +714,59 @@ class FrontendController extends Controller
             ]
         ]);
     }
+
+    public function deposit(Request $request)
+    {
+        $validator = \Validator::make($request->all(),[
+            'amount'=>['required','numeric','min:5']
+        ]);
+        if ($validator->fails()){
+            $errors = "";
+            $e = $validator->errors()->all();
+            foreach ($e as $error) {
+                $errors .= $error . "\n";
+            }
+            $response = [
+                'status' => false,
+                'message' => $errors,
+                'data' => null
+            ];
+            return response()->json($response);
+        }
+        $amount = $request->amount;
+        $user = getAuthUser();
+        $params = [
+            'price_amount' => $amount + 1,
+            'price_currency' => 'usd',
+            'pay_currency' => 'usdttrc20',
+            'ipn_callback_url' => route('ipn_callback'),
+            'order_id' => $user->id,
+            'success_url' => getenv('FRONTEND_URL').'/payment-success',
+            'cancel_url' => getenv('FRONTEND_URL').'/payment-error'
+        ];
+        $url = getenv('NOW_PAYMENT_API_ENDPOINT').'invoice';
+        $setting = getSetting();
+        $header =[
+            'Content-Type' => 'application/json',
+            'X-API-KEY'=>$setting->payment_api_key
+        ];
+        $invoice = \Http::withHeaders($header)->post($url,$params);
+        $invoice = $invoice->object();
+        if ($invoice){
+            return  response()->json([
+                'status'=>true,
+                'msg'=>'',
+                'data'=>[
+                    'invocie'=>$invoice->invoice_url
+                ]
+            ]);
+        }else{
+            return  response()->json([
+                'status'=>false,
+                'msg'=>'Invoice not create',
+                'data'=>null
+            ]);
+        }
+
+    }
 }

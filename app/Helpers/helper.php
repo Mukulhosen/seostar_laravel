@@ -58,3 +58,6 @@ function getAuthUser(){
 function getAuthUserId(){
     return \Illuminate\Support\Facades\Auth::guard('api')->id();
 }
+function getSetting(){
+    return \App\Models\Setting::first();
+}
