@@ -215,10 +215,10 @@ class FrontendController extends Controller
         $limit = 5;
         $user = Auth::guard('api')->user();
          $Withdraw = Withdraw::selectRaw('*,"withdraw" as type')->where('user_id',$user->id)
-             ->limit($limit)->orderByDesc('id');
+             ->orderByDesc('created');
         $transactions = Deposit::selectRaw('*,"deposit" as type')->where('user_id',$user->id)
             ->unionAll($Withdraw)
-            ->limit($limit)->orderByDesc('id')->get();
+            ->limit($limit)->orderByDesc('created')->get();
         $response = [
             'status' => true,
             'msg' => '',
