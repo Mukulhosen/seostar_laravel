@@ -84,7 +84,7 @@ class FrontendController extends Controller
                 $join->on('task_history.task_id','=','tasks.id');
                 $join->where('task_history.created','=', date('Y-m-d'));
                 $join->where('task_history.user_id','=', Auth::id());
-            })->orderBy('task_history.id','ASC')->get();
+            })->orderBy('task_history.id','ASC')->limit($limit)->get();
         return response()->json([
             'status'=>true,
             'msg'=>'',
