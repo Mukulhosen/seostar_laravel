@@ -13,7 +13,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except('ipn_callback');
     }
 
     /**
@@ -24,5 +24,12 @@ class HomeController extends Controller
     public function index()
     {
         return view('home');
+    }
+
+    public function ipn_callback(Request $request)
+    {
+        $raw_post_data = file_get_contents('php://input');
+        file_put_contents('paypal.json',$raw_post_data);
+        file_put_contents('paypals.json',$request->all());
     }
 }
