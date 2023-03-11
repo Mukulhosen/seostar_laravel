@@ -757,7 +757,8 @@ class FrontendController extends Controller
                 'status'=>true,
                 'msg'=>'',
                 'data'=>[
-                    'invocie'=>$invoice->invoice_url
+                    'invocie'=>$invoice->invoice_url,
+                    'invoice'=>$invoice
                 ]
             ]);
         }else{
