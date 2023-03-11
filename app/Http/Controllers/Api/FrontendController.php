@@ -11,6 +11,7 @@ use App\Models\EarnCommissionTransaction;
 use App\Models\EarningTransaction;
 use App\Models\Level;
 use App\Models\PurchaseTransaction;
+use App\Models\Setting;
 use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\Transaction;
@@ -603,6 +604,67 @@ class FrontendController extends Controller
             ]
         ];
         return response()->json($response);
+    }
 
+    public function buyVip($id,Request $request)
+    {
+        $exist = Level::where('id',$id)->first();
+        if (empty($exist)){
+            $response = [
+                'status'=>false,
+                'msg'=>'Level not found',
+                'data'=>null
+            ];
+            return response()->json($response);
+        }
+        $user = Auth::guard('api')->user();
+
+        $chargeable_balance = abs($user->levels->price - $exist->price);
+        if ($user->balance < $chargeable_balance){
+            $response = [
+                'status'=>false,
+                'msg'=>'Sorry! Insufficient Balance',
+                'data'=>null
+            ];
+            return response()->json($response);
+        }
+
+        PurchaseTransaction::create([
+            'user_id'=>$user->id,
+            'perpose'=>'Level Buy',
+            'note'=>'',
+            'created'=>date('Y-m-d H:i:s'),
+            'amount'=>$chargeable_balance,
+            'by_whom' => ''
+        ]);
+        updateBalance($user->id,$chargeable_balance,'withdraw');
+        $setting = Setting::where('id',1)->first();
+        $ref = $user->referral;
+        for ($i = 1; $i < 4; $i++) {
+            $ref_user = User::where('id',$ref)->first();
+            if (!empty($ref) && !empty($ref_user)) {
+                if (!in_array($ref_user->level, [0, 1])) {
+                    $commission_amount = ($chargeable_balance * $setting->{'comission_' . $i}) / 100;
+                    BuyCommissionTransaction::create([
+                        'user_id'=>$ref,
+                        'perpose'=>'Commission from level ' . $i,
+                        'note'=>$i,
+                        'created'=>date('Y-m-d H:i:s'),
+                        'amount'=>$commission_amount,
+                        'by_whom' => $user->id
+                    ]);
+                    updateBalance($ref,$commission_amount);
+                }
+                $ref = $ref_user->referral;
+            }
+        }
+        $user->level = $exist->id;
+        $user->save();
+        $response = [
+            'status'=>true,
+            'msg'=>'Now you upgraded',
+            'data'=>null
+        ];
+        return response()->json($response);
     }
 }
