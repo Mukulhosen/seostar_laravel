@@ -40,6 +40,7 @@ Route::middleware('auth:api')->group(function (){
         Route::get('account-record','accountRecord');
         Route::get('vip','vip');
         Route::post('buy-vip/{id}','buyVip');
+        Route::get('dashboard-chart','dashboardChart');
     });
     Route::controller(AuthController::class)->group(function (){
         Route::post('change-password','changePassword');

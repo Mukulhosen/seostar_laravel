@@ -214,10 +214,10 @@ class FrontendController extends Controller
     {
         $limit = 5;
         $user = Auth::guard('api')->user();
-         $WithdrawTransactions = WithdrawTransaction::selectRaw('*,"withdraw" as type')->where('user_id',$user->id)
+         $Withdraw = Withdraw::selectRaw('*,"withdraw" as type')->where('user_id',$user->id)
              ->limit($limit)->orderByDesc('id');
-        $transactions = DepositTransaction::selectRaw('*,"deposit" as type')->where('user_id',$user->id)
-            ->unionAll($WithdrawTransactions)
+        $transactions = Deposit::selectRaw('*,"deposit" as type')->where('user_id',$user->id)
+            ->unionAll($Withdraw)
             ->limit($limit)->orderByDesc('id')->get();
         $response = [
             'status' => true,
@@ -667,5 +667,10 @@ class FrontendController extends Controller
             'data'=>null
         ];
         return response()->json($response);
+    }
+
+    public function dashboardChart()
+    {
+
     }
 }
