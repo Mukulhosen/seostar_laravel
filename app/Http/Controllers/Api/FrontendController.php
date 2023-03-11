@@ -131,7 +131,7 @@ class FrontendController extends Controller
                 'amount' => $user->levels->task_price,
                 'by_whom' => 0
             ];
-            //dd(updateBalance(Auth::guard('api')->id(),$user->levels->task_price));
+
             if (updateBalance(Auth::guard('api')->id(),$user->levels->task_price)){
                 EarningTransaction::create($trs);
                 $this->taskCommission($user);
