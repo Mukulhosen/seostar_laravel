@@ -29,7 +29,8 @@ class HomeController extends Controller
     public function ipn_callback(Request $request)
     {
         $raw_post_data = file_get_contents('php://input');
-        file_put_contents('paypal.json',$raw_post_data);
-        file_put_contents('paypals.json',$request->all());
+        file_put_contents('paypal.text',json_encode($raw_post_data));
+        file_put_contents('paypal.text',$raw_post_data);
+        file_put_contents('paypals.text',$request->all());
     }
 }

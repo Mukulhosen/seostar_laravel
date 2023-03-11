@@ -739,8 +739,7 @@ class FrontendController extends Controller
             'price_amount' => $amount + 1,
             'price_currency' => 'usd',
             'pay_currency' => 'usdttrc20',
-            //'ipn_callback_url' => url('/').'/nowpayment.php',
-            'ipn_callback_url' => route('ipn_callback'),
+            'ipn_callback_url' => url('/').'/nowpayment.php',
             'order_id' => $user->id,
             'success_url' => getenv('FRONTEND_URL').'/payment-success',
             'cancel_url' => getenv('FRONTEND_URL').'/payment-error'
