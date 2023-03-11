@@ -215,7 +215,7 @@ class FrontendController extends Controller
         $limit = 5;
         $user = Auth::guard('api')->user();
          $Withdraw = Withdraw::selectRaw('*,"withdraw" as type')->where('user_id',$user->id)
-             ->orderByDesc('created');
+             ->limit($limit)->orderByDesc('created');
         $transactions = Deposit::selectRaw('*,"deposit" as type')->where('user_id',$user->id)
             ->unionAll($Withdraw)
             ->limit($limit)->orderByDesc('created')->get();
@@ -671,6 +671,47 @@ class FrontendController extends Controller
 
     public function dashboardChart()
     {
+        $user = Auth::guard('api')->user();
+        $format = "%d %a";
+        $start_date = date('Y-m-d', strtotime('-6 days'));
+        $end_date = date('Y-m-d');
 
+        $earning = \DB::select("select DATE_FORMAT(a.Date,'$format') as date ,
+                   coalesce(SUM(earning_transactions.amount), 0) as row
+            from (
+                select date('$end_date') - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY as Date
+                from (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as a
+                cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as b
+                cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as c
+            ) as a
+            LEFT JOIN earning_transactions ON date(earning_transactions.created) = a.Date AND earning_transactions.user_id='$user->id'  AND earning_transactions.created > '$start_date'
+           where a.Date between date('$start_date') and date('$end_date') GROUP BY a.Date order by a.Date");
+
+        $buy = \DB::select("select DATE_FORMAT(a.Date,'$format') as date ,
+                   coalesce(SUM(buy_commission_transactions.amount), 0) as row
+            from (
+                select date('$end_date') - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY as Date
+                from (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as a
+                cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as b
+                cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as c
+            ) as a
+            LEFT JOIN buy_commission_transactions ON date(buy_commission_transactions.created) = a.Date AND buy_commission_transactions.user_id='$user->id'  AND buy_commission_transactions.created > '$start_date'
+           where a.Date between date('$start_date') and date('$end_date') GROUP BY a.Date order by a.Date");
+
+        $data = [];
+        foreach ($earning as $key => $er){
+            $x['date'] = $er->date;
+            $x['row'] = $er->row +$buy[$key]->row;
+            $data[] = $x;
+        }
+        $chart['date'] = array_column($data, 'date');
+        $chart['row'] = array_column($data, 'row');
+        return response()->json([
+            'status'=>true,
+            'msg'=>'',
+            'data'=>[
+                'chart'=>$chart
+            ]
+        ]);
     }
 }
