@@ -585,6 +585,7 @@ class FrontendController extends Controller
             foreach ($vip as $data){
                 $s = $data;
                 $s->upgrade_amount = 0;
+                $s->yearly_income = $data->monthly_income * 12;
                 if ($is_upgrade == 1){
                     $data->upgrade_amount = abs(($data->price) - Auth::guard('api')->user()->levels->price ?? 0);
                 }
