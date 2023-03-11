@@ -162,7 +162,7 @@ class AuthController extends Controller
 
         $user = Auth::guard('api')->user();
         if ($request->pin != $user->pin){
-            response()->json([
+            return  response()->json([
                 'status'=>false,
                 'msg'=>'PIN not match',
                 'data'=>null
@@ -170,19 +170,18 @@ class AuthController extends Controller
         }
         $user->password = password_hash($request->password,PASSWORD_DEFAULT);
         if ($user->save()){
-            response()->json([
+            return response()->json([
                 'status'=>true,
                 'msg'=>'Password change successfully',
                 'data'=>null
             ]);
         }else{
-            response()->json([
+          return  response()->json([
                 'status'=>false,
                 'msg'=>'Password not change',
                 'data'=>null
             ]);
         }
-
 
     }
 }
