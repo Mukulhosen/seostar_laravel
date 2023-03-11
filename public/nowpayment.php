@@ -22,7 +22,6 @@ if (!empty($payload) && !empty($hmac)) {
         ),
     ));
     $response = curl_exec($curl);
-
     curl_close($curl);
 }
 
