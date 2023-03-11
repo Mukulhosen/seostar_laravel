@@ -9,6 +9,7 @@ use App\Models\Deposit;
 use App\Models\DepositTransaction;
 use App\Models\EarnCommissionTransaction;
 use App\Models\EarningTransaction;
+use App\Models\Level;
 use App\Models\PurchaseTransaction;
 use App\Models\Task;
 use App\Models\TaskHistory;
@@ -375,7 +376,6 @@ class FrontendController extends Controller
                 'invitedPeople' => collect($level['one'])->sum(),
                 'totalTeam'=>collect($level)->sum(),
                 'teamLogs' => PaginationHelper::paginate(collect($logs),20)
-
             ]
         ]);
     }
@@ -572,5 +572,37 @@ class FrontendController extends Controller
             ];
         }
         return response()->json($response);
+    }
+
+    public function vip()
+    {
+        $vip = Level::whereNot('id',1)->orderBy('id','ASC')->get();
+        $newRow = [];
+        if (!empty($vip)){
+            $is_upgrade = 0;
+            $s = [];
+            foreach ($vip as $data){
+                $s = $data;
+                $s->upgrade_amount = 0;
+                if ($is_upgrade == 1){
+                    $data->upgrade_amount = abs(($data->price) - Auth::guard('api')->user()->levels->price ?? 0);
+                }
+                $s->image = asset($data->image);
+                $s->is_upgrade = $is_upgrade;
+                $newRow[] = $s;
+                if ($data->id == Auth::guard('api')->user()->level){
+                    $is_upgrade = 1;
+                }
+            }
+        }
+        $response = [
+            'status'=>true,
+            'msg'=>'',
+            'data'=>[
+                'vip'=>$newRow
+            ]
+        ];
+        return response()->json($response);
+
     }
 }
