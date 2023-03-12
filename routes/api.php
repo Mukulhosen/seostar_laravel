@@ -32,12 +32,12 @@ Route::middleware('auth:api')->group(function (){
         Route::get('get-current-user-transaction','getCurrentUserTransaction');
         Route::get('dashboard','dashboard');
         Route::get('user-task','userTask');
-        Route::post('user-task-complete','userTaskComplete');
+        Route::post('user-task-complete','userTaskComplete')->middleware('active.user');
         Route::get('get-user-transactions','getUserTransactions');
         Route::get('current-user-info','getCurrentUserInfo');
         Route::get('teams','teams');
         Route::get('history','history');
-        Route::post('payout','payout');
+        Route::post('payout','payout')->middleware('active.user');
         Route::get('account-record','accountRecord');
         Route::get('vip','vip');
         Route::post('buy-vip/{id}','buyVip');
