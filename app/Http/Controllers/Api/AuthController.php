@@ -95,6 +95,7 @@ class AuthController extends Controller
         $validator = \Validator::make($request->all(),[
             'username'=>['required'],
             'password'=>['required', 'string'],
+            'ip'=>['required', 'ip']
         ]);
         if ($validator->fails()){
             $errors = "";
@@ -121,6 +122,8 @@ class AuthController extends Controller
         $valid = Auth::attempt($request->only('username','password'));
         if ($valid){
             $token = $user->createToken($user->username)->accessToken;
+            $user->last_login_ip = $request->ip;
+            $user->save();
             return response()->json([
                 'status'=>true,
                 'msg'=>'Login Successful',
