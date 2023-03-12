@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -20,8 +20,26 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
+        'username',
         'password',
+        'account_number',
+        'balance',
+        'level',
+        'pin',
+        'deposit_address',
+        'status',
+        'role',
+        'referral',
+        'register_login_ip',
+        'last_login_ip',
+        'country_code',
+        'country_name',
+        'country_dial_code',
+        'plan_purchase_date',
+        'created',
+        'modified',
+        'last_login_datetime',
+        'tags',
     ];
 
     /**
@@ -42,4 +60,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function levels()
+    {
+        return $this->hasOne(Level::class,'id','level');
+    }
 }
