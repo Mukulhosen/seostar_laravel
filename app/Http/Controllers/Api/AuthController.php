@@ -30,7 +30,7 @@ class AuthController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);
@@ -40,7 +40,7 @@ class AuthController extends Controller
         if (empty($ref)){
             return response()->json([
                 'status' => false,
-                'message' => 'Sorry! Invalid Invitation code',
+                'msg' => 'Sorry! Invalid Invitation code',
                 'data' => null
             ]);
         }
@@ -48,7 +48,7 @@ class AuthController extends Controller
         if (empty($level)){
             return response()->json([
                 'status' => false,
-                'message' => 'Sorry! System Error',
+                'msg' => 'Sorry! System Error',
                 'data' => null
             ]);
         }
@@ -74,7 +74,7 @@ class AuthController extends Controller
             $token = $user->createToken($user->username)->accessToken;
             return response()->json([
                 'status' => true,
-                'message' => 'Register Successful',
+                'msg' => 'Register Successful',
                 'data' => [
                     'access_token' => $token,
                     'access_type' => "Bearer",
@@ -84,7 +84,7 @@ class AuthController extends Controller
         }else{
             return response()->json([
                 'status' => false,
-                'message' => 'Register failed',
+                'msg' => 'Register failed',
                 'data' => null
             ]);
         }
@@ -103,7 +103,7 @@ class AuthController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);
@@ -112,7 +112,7 @@ class AuthController extends Controller
         if (empty($user)){
             return response()->json([
                 'status' => false,
-                'message' => __('User does not exist.'),
+                'msg' => __('User does not exist.'),
                 'data' => null
             ]);
         }
@@ -122,7 +122,7 @@ class AuthController extends Controller
             $token = $user->createToken($user->username)->accessToken;
             return response()->json([
                 'status'=>true,
-                'message'=>'Login Successful',
+                'msg'=>'Login Successful',
                 'data'=>[
                     'access_token' => $token,
                     'access_type' => "Bearer",
@@ -132,7 +132,7 @@ class AuthController extends Controller
         }else{
             return response()->json([
                 'status'=>false,
-                'message'=>'Username or password not match',
+                'msg'=>'Username or password not match',
                 'data'=>null
             ]);
         }
@@ -154,7 +154,7 @@ class AuthController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);

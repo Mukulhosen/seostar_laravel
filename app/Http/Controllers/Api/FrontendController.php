@@ -107,7 +107,7 @@ class FrontendController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);
@@ -394,7 +394,7 @@ class FrontendController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);
@@ -435,7 +435,7 @@ class FrontendController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);
@@ -528,7 +528,7 @@ class FrontendController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);
@@ -728,7 +728,7 @@ class FrontendController extends Controller
             }
             $response = [
                 'status' => false,
-                'message' => $errors,
+                'msg' => $errors,
                 'data' => null
             ];
             return response()->json($response);
