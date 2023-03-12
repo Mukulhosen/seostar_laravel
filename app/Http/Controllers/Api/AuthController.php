@@ -21,6 +21,7 @@ class AuthController extends Controller
             'country_code'=>['required'],
             'country_name'=>['required'],
             'country_dial_code'=>['required'],
+            'ip'=>['required','ip'],
         ]);
         if ($validator->fails()){
             $errors = "";
@@ -58,7 +59,7 @@ class AuthController extends Controller
             'referral' => $invitationCode,
             'role' => 'User',
             'status' => 'Active',
-            'register_login_ip' => @$_SERVER["HTTP_CF_CONNECTING_IP"],
+            'register_login_ip' => $request->ip,
             'created' => date('Y-m-d H:i:s'),
             'modified' => date('Y-m-d H:i:s'),
             'country_code' => $request->country_code,
