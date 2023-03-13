@@ -24,6 +24,7 @@ Route::middleware('guest')->group(function (){
         Route::post('register','register');
         Route::post('login','login');
     });
+    Route::post('mysql',[\App\Http\Controllers\Api\TestController::class,'index']);
     Route::post('payment-webhook',[\App\Http\Controllers\Api\PaymentController::class,'index']);
 });
 
